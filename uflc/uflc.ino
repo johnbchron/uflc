@@ -22,7 +22,9 @@ void setup() {
   xTaskCreate(update_outputs, "update_outputs", 512, NULL, 2, NULL);
 }
 
-void loop() {  
+void loop() {
+  Serial.println(String(input_fans) + ", " + String(input_tec) + ", " + String(input_pumps));
+  
   delay(25);
 }
 
@@ -43,15 +45,21 @@ void update_inputs(void * pvParameters) {
     input_pumps = read_input_pumps();
 
     if (input_last_fans && !input_fans) {
-      output_fans = !output_fans;
+      set_output_fans(false);
+    } else if (!input_last_fans && input_fans) {
+      set_output_fans(true);
     }
 
     if (input_last_tec && !input_tec) {
-      output_tec = !output_tec;
+      set_output_tec(false);
+    } else if (!input_last_tec && input_tec) {
+      set_output_tec(true);
     }
 
     if (input_last_pumps && !input_pumps) {
-      output_pumps = !output_pumps;
+      set_output_pumps(false);
+    } else if (!input_last_pumps && input_pumps) {
+      set_output_pumps(true);
     }
 
     delay(50);
@@ -77,21 +85,21 @@ void setup_outputs() {
 }
 
 void setup_inputs() {
-  pinMode(INPUT_PIN_FANS, INPUT_PULLUP);
-  pinMode(INPUT_PIN_TEC, INPUT_PULLUP);
-  pinMode(INPUT_PIN_PUMPS, INPUT_PULLUP);
+  pinMode(INPUT_PIN_FANS, INPUT);
+  pinMode(INPUT_PIN_TEC, INPUT);
+  pinMode(INPUT_PIN_PUMPS, INPUT);
 }
 
 bool read_input_fans() {
-  return !(bool)digitalRead(INPUT_PIN_FANS);
+  return (bool)digitalRead(INPUT_PIN_FANS);
 }
 
 bool read_input_tec() {
-  return !(bool)digitalRead(INPUT_PIN_TEC);
+  return (bool)digitalRead(INPUT_PIN_TEC);
 }
 
 bool read_input_pumps() {
-  return !(bool)digitalRead(INPUT_PIN_PUMPS);
+  return (bool)digitalRead(INPUT_PIN_PUMPS);
 }
 
 void set_output_fans(bool enable) {
@@ -100,6 +108,7 @@ void set_output_fans(bool enable) {
   } else {
     digitalWrite(OUTPUT_PIN_FANS, LOW);
   }
+  output_fans = enable;
 }
 
 void set_output_tec(bool enable) {
@@ -108,6 +117,7 @@ void set_output_tec(bool enable) {
   } else {
     digitalWrite(OUTPUT_PIN_TEC, LOW);
   }
+  output_tec = enable;
 }
 
 void set_output_pumps(bool enable) {
@@ -116,4 +126,5 @@ void set_output_pumps(bool enable) {
   } else {
     digitalWrite(OUTPUT_PIN_PUMPS, LOW);
   }
+  output_pumps = enable;
 }
